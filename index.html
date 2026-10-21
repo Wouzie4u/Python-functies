@@ -138,7 +138,7 @@ return D.map(i=>({i,r:q?rk(i,q):0})).filter(x=>x.r>=0&&(!ken||x.i.k)).sort((a,b)
 function r(){const qv=document.getElementById('q').value;let h='',n=0;
 if(qv.trim()){const L=srch(qv),ql=qv.toLowerCase().trim(),XM=XS.filter(x=>(x.n+' '+x.d).toLowerCase().includes(ql));n=L.length+XM.length;if(XM.length)h='<h2>In het leerpad, foutmeldingen en projecten</h2>'+XM.map(x=>'<a class="lk" href="#'+x.href+'">'+XI[x.g]+' '+e(x.n)+'</a>').join('');if(L.length)h+='<h2>Zoekresultaten</h2>'+L.map(i=>card(i,i.g=='f'?'':'('+(TG[i.g]||i.g)+')')).join('')}
 else for(const g in T){const L=D.filter(i=>i.g==g&&(!ken||i.k));if(!L.length)continue;h+='<h2>'+T[g]+'</h2>';for(const i of L){n++;h+=card(i,'')}}
-document.getElementById('m').innerHTML=h||'<p>Niets gevonden 🤔</p>';document.getElementById('cnt').textContent=n+' resultaten';if(typeof updCounters=='function')updCounters()}
+document.getElementById('m').innerHTML=h||(/^\s*ontgrendel(\s|$)/i.test(q.value)?'':'<p>Niets gevonden 🤔</p>');document.getElementById('cnt').textContent=n+' resultaten';if(typeof updCounters=='function')updCounters()}
 q.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();q.blur();const c=document.querySelector('#m .c');if(c)c.scrollIntoView({behavior:'smooth',block:'start'})}};
 q.oninput=r;all.onclick=()=>{ken=false;all.className='on';document.getElementById('ken').className='';r()};
 document.getElementById('ken').onclick=()=>{ken=true;document.getElementById('ken').className='on';all.className='';r()};
@@ -154,7 +154,7 @@ const Z=D.concat(XS).map(i=>{const s=nm(i),pre=s.slice(0,q.length);let d=Math.mi
 .filter(x=>x.d<=Math.max(1,Math.ceil(q.length/2))).sort((a,b)=>a.d-b.d||by(a.i,b.i));return{fz:true,L:Z.slice(0,8).map(x=>x.i)}}
 if(typeof document!=='undefined'){const sg=document.getElementById('sg');let cur=[],act=-1;
 const close=()=>{sg.className='';sg.innerHTML='';cur=[];act=-1;q.setAttribute('aria-expanded','false')};
-const show=()=>{const R=sugg(q.value);cur=R.L;act=-1;if(!cur.length){close();return}
+const show=()=>{if(/^\s*ontgrendel(\s|$)/i.test(q.value)){close();return}const R=sugg(q.value);cur=R.L;act=-1;if(!cur.length){close();return}
 sg.innerHTML=(R.fz?'<div class="sh">Bedoel je…?</div>':'')+cur.map((i,k)=>'<div class="so" role="option" data-k="'+k+'"><b>'+(XI[i.g]?XI[i.g]+' ':'')+e(TG[i.g]?i.n:i.s.split('(')[0]+'()')+'</b><span>'+e(i.d.split(' ').slice(0,6).join(' '))+(i.d.split(' ').length>6?'…':'')+'</span></div>').join('');
 sg.className='open';q.setAttribute('aria-expanded','true')};
 const mark=()=>sg.querySelectorAll('.so').forEach((o,k)=>{o.classList.toggle('act',k==act);if(k==act)o.scrollIntoView({block:'nearest'})});
@@ -375,8 +375,13 @@ let R;try{R=JSON.parse(py.globals.get('_pf_run')(ed.value,g.invoer?JSON.stringif
 let h='<div class="lab">Jouw uitvoer:</div><pre>'+(R.o?e(R.o):'<i>(geen uitvoer)</i>')+'</pre>';if(R.e)h+=errHTML(R.e);
 else if(g.uitvoer&&(norm(R.o)==norm(g.uitvoer)||(g.invoer&&norm(R.o).endsWith('\n'+norm(g.uitvoer)))))h='<div class="ok">🎉 Juist! Dit is precies de verwachte uitvoer.</div>'+h;
 else if(g.uitvoer)h=(bijna(R.o,g.uitvoer)||'<div class="bad">🤔 Nog niet wat verwacht wordt: <code>'+e(g.uitvoer)+'</code></div>')+h;out.innerHTML=h});
-q.addEventListener('keydown',async ev=>{if(ev.key!='Enter')return;const m=q.value.trim().match(/^ontgrendel\s+(\S+)$/i);if(!m)return;ev.preventDefault();
-const ok=await pgUnlock(m[1]);q.value='';if(ok)location.hash='pg'});
+let pgBusy=false,pgLast='';
+async function pgTry(force){const m=q.value.replace(/\s+/g,' ').trim().match(/^ontgrendel ?(.+)$/i);if(!m)return false;
+const c=m[1].replace(/\s+/g,'').toUpperCase();if(!force&&c.length<16)return true;if(pgBusy||c==pgLast)return true;pgBusy=true;pgLast=c;
+const ok=await pgUnlock(c);pgBusy=false;if(ok){q.value='';q.blur();location.hash='pg'}else if(force){document.getElementById('m').innerHTML='<p>🔒 Deze code klopt niet.</p>'}return true}
+q.addEventListener('input',()=>{pgTry(false)});
+q.addEventListener('search',()=>{pgTry(true)});
+q.addEventListener('keydown',ev=>{if(ev.key!='Enter'&&ev.keyCode!=13)return;if(/^\s*ontgrendel\s/i.test(q.value)){ev.preventDefault();ev.stopImmediatePropagation();pgLast='';pgTry(true)}},true);
 pgTab();
 
 window.addEventListener('hashchange',route);
@@ -462,4 +467,4 @@ function ap(){var t=cur(),h=document.documentElement;if(t=="auto")h.removeAttrib
 var d=t=="dark"||(t=="auto"&&mq.matches);document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.content=d?"#121a24":"#1f4e79"});
 b.textContent=I[t];b.setAttribute("aria-label","Thema: "+L[t]+". Tik om te wisselen.");b.title="Thema: "+L[t]}
 b.addEventListener("click",function(){var n=M[(M.indexOf(cur())+1)%3];try{n=="auto"?localStorage.removeItem("pf_theme"):localStorage.setItem("pf_theme",n)}catch(_){}ap()});
-mq.addEventListener&&mq.addEventListener("change",ap);ap()})();</script><script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");</script></body></html>
+mq.addEventListener&&mq.addEventListener("change",ap);ap()})();</script><script>if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had&&!rl){rl=true;location.reload()}});navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{r.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState=="visible")r.update()})})}</script></body></html>
