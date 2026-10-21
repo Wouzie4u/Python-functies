@@ -92,7 +92,8 @@ body.trm{padding-bottom:190px}html:has(body.trm){scroll-padding-bottom:140px}.tr
 .pg.pgfs .pgd{min-height:0;height:100%}}
 .pgexp{margin:6px 0}.pgexp pre{background:#252526!important;color:#d4d4d4!important;border:1px solid #3c3c3c;border-left:3px solid #4ec9b0;border-radius:6px;padding:8px 10px;margin:2px 0;font:15px/1.5 Consolas,ui-monospace,monospace;white-space:pre-wrap}
 .pg.pgfs .pgfh{position:sticky;top:-10px;background:var(--bg);z-index:5;box-shadow:0 2px 6px #0004;margin:0 -10px 4px;padding:6px 10px}
-@media(min-width:700px){.pg.pgfs .pgw .pgfh{top:0;margin:0 0 4px;padding:6px 0}}</style></head><body>
+@media(min-width:700px){.pg.pgfs .pgw .pgfh{top:0;margin:0 0 4px;padding:6px 0}}
+.okb{display:inline-block;background:#2e7d32;color:#fff;border-radius:999px;padding:1px 9px;font-size:.8em;font-weight:700;vertical-align:middle;margin-right:4px}</style></head><body>
 <header><h1><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110"><path fill="#3776AB" d="M54 2C27 2 29 14 29 14v12h26v4H18S2 28 2 55s14 26 14 26h9V68s0-14 14-14h24s13 0 13-13V16S78 2 54 2zM40 10a5 5 0 1 1 0 10a5 5 0 0 1 0-10z"/><path fill="#FFD43B" d="M56 108c27 0 25-12 25-12V84H55v-4h37s16 2 16-25-14-26-14-26h-9v13s0 14-14 14H47s-13 0-13 13v25s-2 14 22 14zm14-8a5 5 0 1 1 0-10a5 5 0 0 1 0 10z"/></svg> Wouzie's Slangwijs</h1><div class="sw"><input id="q" type="search" placeholder="Zoek… bv. lengte, tekst, lijst" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="sg"><div id="sg" role="listbox"></div></div>
 <div class="bar" id="bar"><button id="all" class="on">Alles</button><button id="ken">⭐ Ken ik al</button><span id="cnt"></span><button id="thm" aria-label="Thema: automatisch">🌗</button><button id="cfg" aria-label="Instellingen" aria-expanded="false" aria-controls="pn">⚙️</button></div>
 <div id="pn" hidden><label for="dir"><b>📁 Mijn oefenmap</b></label><input id="dir" type="text" placeholder="bv. C:\MijnOefeningen" autocomplete="off" spellcheck="false"><div class="pt">Vul de map in waar je je oefeningen bewaart. Dan zie je bij elke oefening het volledige pad bij "Bewaar als". Laat je het leeg, dan zie je enkel de bestandsnaam. Dit wordt alleen op dit toestel onthouden, niet online.</div><a class="xb" id="meelink" href="#meenemen" style="display:inline-block;margin-top:10px">📲 Voortgang meenemen naar een ander toestel</a></div><nav id="tabs"><a href="#zoek" data-t="zoek">🔎 Opzoeken</a><a href="#leerpad" data-t="leerpad">📚 Leerpad</a><a href="#fouten" data-t="fouten">🩺 Foutmeldingen</a><a href="#projecten" data-t="projecten">🛠️ Projecten</a><a href="#vooruitgang" data-t="vooruitgang">📊 Vooruitgang</a></nav></header>
@@ -208,6 +209,9 @@ const ea=s=>e(String(s)).replace(/"/g,'&quot;');
 const md=s=>e(s).split(/(`[^`]+`)/).map(p=>p[0]=='`'&&p.length>2&&p.endsWith('`')?'<code>'+p.slice(1,-1)+'</code>':p.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')).join('');
 let MAP='';try{MAP=localStorage.getItem(LS_MAP)||''}catch(_){}
 let DONE=lsg(LS_DONE,{});
+const LS_CODE='pf-code',LS_PGOK='pf-pgok',LS_PGC='sw_pgcode';let CODE=lsg(LS_CODE,{});if(!CODE||typeof CODE!='object')CODE={};
+const svT={};function svCode(key,id,v,start){clearTimeout(svT[key+id]);svT[key+id]=setTimeout(()=>{const o=lsg(key,{})||{};if(v===start||!v.trim())delete o[id];else o[id]=v;lss(key,Object.keys(o).length?o:null);if(key==LS_CODE)CODE=o},400)}
+const OKB='<span class="okb">✅ Opgelost</span> ';
 /* Leerpad v2 (16 lessen): oude leerpad-vinkjes, bladwijzer en trajectpositie horen bij andere oefeningen */
 if(lsg('pf_lv',1)<2){Object.keys(DONE).forEach(k=>{if(k.startsWith('l|'))delete DONE[k]});lss(LS_DONE,DONE);lss(LS_BM,null);lss('pf_tr',null);lss('pf_lv',2)}if(typeof DONE!='object'||!DONE)DONE={};
 function fp(f){const m=MAP.trim();if(!m)return f;const s=m.includes('/')?'/':'\\';return m.replace(/[\\/]+$/,'')+s+f}
@@ -220,11 +224,11 @@ const nd=p=>Object.keys(DONE).filter(k=>k.startsWith(p)&&X[k]).length;
 function updCounters(){document.querySelectorAll('.cp').forEach(s=>{const d=nd(s.dataset.cp),t=+s.dataset.tot;
 s.textContent=s.classList.contains('full')?d+'/'+t+(d==t&&t?' ✅':''):(d?' · ✔ '+d+'/'+t:'')})}
 function setDone(id,v){if(v)DONE[id]=1;else delete DONE[id];lss(LS_DONE,DONE);
-document.querySelectorAll('.ex').forEach(ex=>{if(ex.dataset.x!==id)return;ex.classList.toggle('done',v);ex.querySelector('.ck').textContent=v?'✅ ':'';ex.querySelector('.dn').checked=v});updCounters()}
+document.querySelectorAll('.ex').forEach(ex=>{if(ex.dataset.x!==id)return;ex.classList.toggle('done',v);ex.querySelector('.ck').innerHTML=v?OKB:'';ex.querySelector('.dn').checked=v});updCounters()}
 const rows=s=>Math.min(20,Math.max(3,s.split('\n').length+1));
 function exHTML(x,title,desc){const d=!!DONE[x.id];
-return '<div class="ex'+(d?' done':'')+'" data-x="'+ea(x.id)+'"><h4><span class="ck">'+(d?'✅ ':'')+'</span>'+e(title)+'</h4>'+(desc?'<div>'+md(desc)+'</div>':'')+
-(x.w?'<div class="wu"><b>🧭 Wat moet je doen?</b> '+e(x.w).replace(' Begrip: ','<br><b>📘 Begrip:</b> ')+'</div>':'')+(x.tip?'<div class="tip">👉 Tik in het vak: de cursor springt naar de lege plek. Typ daar jouw antwoord en druk dan op <b>▶ Uitvoeren</b>.</div>':'')+'<div class="lab">🎯 Verwachte uitvoer'+(x.v?'':' <span class="w">(niet automatisch getest)</span>')+':</div><pre class="exp">'+e(x.o)+'</pre>'+'<div class="lab">'+(x.proj?'Schrijf hier je programma, stap voor stap:':'Vul de lege plek in en probeer het uit:')+'</div><textarea class="ed" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" rows="'+rows(x.k)+'" aria-label="Code-editor">'+e(x.k)+'</textarea>'+
+return '<div class="ex'+(d?' done':'')+'" data-x="'+ea(x.id)+'"><h4><span class="ck">'+(d?OKB:'')+'</span>'+e(title)+'</h4>'+(desc?'<div>'+md(desc)+'</div>':'')+
+(x.w?'<div class="wu"><b>🧭 Wat moet je doen?</b> '+e(x.w).replace(' Begrip: ','<br><b>📘 Begrip:</b> ')+'</div>':'')+(x.tip?'<div class="tip">👉 Tik in het vak: de cursor springt naar de lege plek. Typ daar jouw antwoord en druk dan op <b>▶ Uitvoeren</b>.</div>':'')+'<div class="lab">🎯 Verwachte uitvoer'+(x.v?'':' <span class="w">(niet automatisch getest)</span>')+':</div><pre class="exp">'+e(x.o)+'</pre>'+'<div class="lab">'+(x.proj?'Schrijf hier je programma, stap voor stap:':'Vul de lege plek in en probeer het uit:')+'</div><textarea class="ed" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" rows="'+rows(CODE[x.id]!=null?CODE[x.id]:x.k)+'" aria-label="Code-editor">'+e(CODE[x.id]!=null?CODE[x.id]:x.k)+'</textarea>'+
 '<div><button class="xb rb" data-a="run">▶ Uitvoeren</button><button class="xb rb" data-a="chk">✔ Controleer</button><button class="xb" data-a="cp">📋 Kopieer</button><button class="xb" data-a="rs">↺ Herbegin</button></div><div class="out" hidden aria-live="polite"></div>'+
 '<div class="lab">Bewaar als <span class="fn" data-f="'+ea(x.f)+'">'+e(fp(x.f))+'</span></div>'+
 
@@ -280,7 +284,7 @@ if(b.dataset.cpy){cpy(LSN[+b.dataset.cpy].fl,b);return}
 const ex=b.closest('.ex');if(!ex)return;const a=b.dataset.a,x=X[ex.dataset.x];
 if(a=='run'||a=='chk')runX(ex,a);
 else if(a=='cp')cpy(ex.querySelector('.ed').value,b);
-else if(a=='rs'){if(ex.querySelector('.ed').value==x.k||confirm('Je eigen code wissen en opnieuw beginnen?')){const d=ex.querySelector('.ed');d.value=x.k;delete d.dataset.moved;ex.querySelector('.out').hidden=true;d.focus()}}
+else if(a=='rs'){if(ex.querySelector('.ed').value==x.k||confirm('Terug naar de startcode? Je eigen code wordt gewist.'+(DONE[x.id]?' Je ✅ Opgelost blijft staan.':''))){const d=ex.querySelector('.ed');d.value=x.k;svCode(LS_CODE,x.id,x.k,x.k);delete d.dataset.moved;ex.querySelector('.out').hidden=true;d.focus()}}
 else if(a=='h'||a=='s'){const el=ex.querySelector(a=='h'?'.hb':'.sol');el.hidden=!el.hidden;b.classList.toggle('on',!el.hidden);
 b.textContent=(a=='h'?(el.hidden?'💡 Toon hint':'💡 Verberg hint'):(el.hidden?'✅ Toon oplossing':'✅ Verberg oplossing'))}});
 function pnClose(){const p=document.getElementById('pn'),b=document.getElementById('cfg');if(p&&!p.hidden){p.hidden=true;b.setAttribute('aria-expanded','false')}}
@@ -311,7 +315,7 @@ function project(n){const p=PR[n-1];if(!p)return projList();
 VW.innerHTML='<div class="nv"><a href="#projecten">← Alle projecten</a></div><h2>Project '+n+': '+e(p.t)+'</h2><p>'+e(p.d)+'</p><h3>Stappen</h3>'+
 p.st.map((s,k)=>'<div class="stp"><b>Stap '+(k+1)+'.</b> '+md(s.t)+'<br><button class="xb" data-st="'+k+'">💡 Hint</button><div class="hb" hidden>'+e(s.h)+'</div></div>').join('')+
 '<h3>Aan de slag</h3>'+exHTML(p.x,'Jouw programma','')+'<div class="nv">'+(n>1?'<a class="lk" href="#project/'+(n-1)+'">← Vorig project</a>':'<span></span>')+(n<PR.length?'<a class="lk" href="#project/'+(n+1)+'">Volgend project →</a>':'')+'</div>'}
-function prog(){const tot=Object.keys(X).length,all=nd('');let h='<h2>📊 Mijn vooruitgang</h2><p><b>'+all+'</b> van de <b>'+tot+'</b> oefeningen opgelost.</p>'+pbar(all,tot);h+='<p><a class="xb" href="#meenemen">📲 Voortgang meenemen naar een ander toestel</a></p>';
+function prog(){const tot=Object.keys(X).length,all=nd('');let h='<h2>📊 Mijn vooruitgang</h2><p><b>'+all+'</b> van de <b>'+tot+'</b> oefeningen opgelost.</p>'+pbar(all,tot)+(pgCode()?'<p>🧩 Mijn probleemgevallen: <b>'+Object.keys(lsg(LS_PGOK,{})||{}).length+'</b> opgelost (apart geteld).</p>':'');h+='<p><a class="xb" href="#meenemen">📲 Voortgang meenemen naar een ander toestel</a></p>';
 const row=(lab,p,t,href)=>'<div class="pr"><div>'+(href?'<a href="#'+href+'">'+lab+'</a>':lab)+' <span class="pt">'+nd(p)+'/'+t+'</span></div>'+pbar(nd(p),t)+'</div>';
 h+='<h3>Leerpad</h3>'+LSN.map((L,k)=>row('Les '+(k+1)+': '+e(L.t),'l|'+(k+1)+'|',L.x.length,'les/'+(k+1))).join('');
 h+='<h3>Projecten</h3>'+row('Projecten','p|',PR.length,'projecten');
@@ -342,7 +346,7 @@ const meeIds=()=>Object.keys(X).sort();
 function meePack(o){o=Object.assign({},o);let d={};try{d=JSON.parse(o['pf-klaar']||'{}')}catch(_){}const ids=meeIds(),bits=new Uint8Array(Math.ceil(ids.length/8));let all=true;
 for(const k in d){if(!d[k])continue;const i=ids.indexOf(k);if(i<0){all=false;continue}bits[i>>3]|=1<<(i&7)}if(all&&o['pf-klaar']){delete o['pf-klaar'];o._k=b64u(bits)}return o}
 function meeUnpack(o){if(typeof o._k=='string'){const u=unb64u(o._k),ids=meeIds(),d={};ids.forEach((k,i)=>{if(u[i>>3]&(1<<(i&7)))d[k]=1});delete o._k;o['pf-klaar']=JSON.stringify(d)}return o}
-async function meeCode(){const raw=new TextEncoder().encode(JSON.stringify(meePack(meeData())));
+async function meeCode(lite){const o0=meeData();if(lite)delete o0[LS_CODE];const raw=new TextEncoder().encode(JSON.stringify(meePack(o0)));
 if(window.CompressionStream){try{return 'S1'+b64u(await zipS(raw,true))}catch(_){}}return 'S0'+b64u(raw)}
 async function meeParse(code){code=String(code||'').trim();const m=code.match(/#import=([A-Za-z0-9_-]+)/);if(m)code=m[1];code=code.replace(/\s+/g,'');
 if(!/^S[01][A-Za-z0-9_-]+$/.test(code))throw 0;let u=unb64u(code.slice(2));if(code[1]=='1')u=await zipS(u,false);
@@ -361,9 +365,9 @@ VW.innerHTML='<h2>📲 Voortgang meenemen</h2><p>Wil je verder oefenen op een an
 '<h3>📤 Exporteren (op het oude toestel)</h3><ol><li>Tik op <b>Toon QR-code</b>.</li><li>Open op het nieuwe toestel de <b>camera</b> en richt die op de QR-code. Tik op de link die verschijnt.</li><li>Kies daar <b>Laad voortgang</b>.</li></ol><p>Lukt scannen niet? Tik dan op <b>Kopieer</b> en stuur de code naar jezelf (bv. via mail of WhatsApp). Plak hem op het nieuwe toestel hieronder bij Importeren.</p>'+
 '<button type="button" class="xb pri" id="meeqr">Toon QR-code</button><div id="meeqrbox"></div><label class="lab" for="meecode">Jouw code:</label><textarea id="meecode" class="ed" rows="3" readonly spellcheck="false"></textarea><button type="button" class="xb" id="meecp">📋 Kopieer</button>'+
 '<h3>📥 Importeren (op het nieuwe toestel)</h3><p>Plak hier de code van het andere toestel en tik op <b>Laad voortgang</b>. Let op: je huidige voortgang op dit toestel wordt dan vervangen.</p><textarea id="meein" class="ed" rows="3" spellcheck="false" placeholder="Plak hier de code"></textarea><button type="button" class="xb pri" id="meeld">Laad voortgang</button><div id="meeout"></div>';
-const ce=document.getElementById('meecode');let url='';meeCode().then(c=>{ce.value=c;url=MEE_URL+'#import='+c});
+const ce=document.getElementById('meecode');let url='',lite=false;meeCode().then(async c=>{ce.value=c;url=MEE_URL+'#import='+c;if(url.length>2800){lite=true;url=MEE_URL+'#import='+await meeCode(true)}});
 document.getElementById('meecp').onclick=ev=>cpy(ce.value,ev.currentTarget);
-document.getElementById('meeqr').onclick=()=>{const bx=document.getElementById('meeqrbox');try{const q=qrcode(0,'L');q.addData(url,'Byte');q.make();bx.innerHTML='<div class="qr">'+q.createSvgTag({cellSize:4,margin:4,scalable:true})+'</div><div class="pt">Scan deze code met de camera van het nieuwe toestel.</div>'}catch(_){bx.innerHTML='<div class="bad">De voortgang is te groot voor een QR-code. Gebruik dan Kopieer en plak de code op het andere toestel.</div>'}};
+document.getElementById('meeqr').onclick=()=>{const bx=document.getElementById('meeqrbox');try{const q=qrcode(0,'L');q.addData(url,'Byte');q.make();bx.innerHTML='<div class="qr">'+q.createSvgTag({cellSize:4,margin:4,scalable:true})+'</div><div class="pt">Scan deze code met de camera van het nieuwe toestel.'+(lite?' Je eigen code in de oefeningen is te groot voor de QR-code: die neemt alleen je vinkjes mee. Wil je ook je code meenemen? Gebruik dan Kopieer.':'')+'</div>'}catch(_){bx.innerHTML='<div class="bad">De voortgang is te groot voor een QR-code. Gebruik dan Kopieer en plak de code op het andere toestel.</div>'}};
 document.getElementById('meeld').onclick=()=>meeAsk(document.getElementById('meein').value,document.getElementById('meeout'));
 if(imp)document.getElementById('meeyes').onclick=()=>meeAsk(imp,document.getElementById('meeio'));window.scrollTo(0,0)}
 
@@ -405,20 +409,20 @@ async function pgRoute(v){if(v.startsWith('ontgrendel=')){const ok=await pgUnloc
 else if(v=='vergrendel'){localStorage.removeItem(PG_KEY);PG=null;pgTab();history.replaceState(null,'',location.pathname+'#zoek');return route()}
 const c=pgCode();if(!c){history.replaceState(null,'',location.pathname+'#zoek');return route()}
 pgShell();VW.innerHTML='<p>⏳ Even laden...</p>';if(!PG){try{PG=await pgDecrypt(c)}catch(_){VW.innerHTML='<div class="bad">😕 De probleemgevallen konden niet geladen worden. Heb je internet? Of is de code veranderd? Ontgrendel dan opnieuw met de nieuwe link.</div>';return}}
-const GR=[];PG.forEach(g=>{const k=g.groep||'Overige';if(!GR.includes(k))GR.push(k)});
-VW.innerHTML='<h2>🧩 Mijn probleemgevallen</h2><p>Oefeningen waar je vastzat, met de valkuilen en uitleg. Probeer ze eerst zelf opnieuw in het vak. Kijk pas daarna naar de oplossing.</p><p>'+GR.map((k,j)=>'<a class="xb" href="#pg" data-pgg="'+j+'">'+e(k)+' ('+PG.filter(g=>(g.groep||'Overige')==k).length+')</a>').join(' ')+'</p>'+GR.map((k,j)=>'<h2 id="pgg'+j+'">📂 '+e(k)+'</h2>'+PG.map((g,i)=>[g,i]).filter(([g])=>(g.groep||'Overige')==k).map(([g,i])=>
-'<div class="ex pg" data-pg="'+i+'"><h3>'+e(g.t)+'</h3>'+(g.bron?'<div class="pt">'+e(g.bron)+'</div>':'')+
+const POK=lsg(LS_PGOK,{})||{},PGC=lsg(LS_PGC,{})||{},pv=g=>PGC[g.id]!=null?PGC[g.id]:(g.start||'');const GR=[];PG.forEach(g=>{const k=g.groep||'Overige';if(!GR.includes(k))GR.push(k)});
+VW.innerHTML='<h2>🧩 Mijn probleemgevallen</h2><p class="pgcnt">✅ '+PG.filter(g=>POK[g.id]).length+' van de '+PG.length+' opgelost</p><p>Oefeningen waar je vastzat, met de valkuilen en uitleg. Probeer ze eerst zelf opnieuw in het vak. Kijk pas daarna naar de oplossing.</p><p>'+GR.map((k,j)=>(()=>{const L=PG.filter(g=>(g.groep||'Overige')==k),n=L.filter(g=>POK[g.id]).length;return '<a class="xb" href="#pg" data-pgg="'+j+'" data-pgn="'+ea(k)+'">'+e(k)+' ('+(n?'✅ '+n+'/':'')+L.length+')</a>'})()).join(' ')+'</p>'+GR.map((k,j)=>'<h2 id="pgg'+j+'">📂 '+e(k)+'</h2>'+PG.map((g,i)=>[g,i]).filter(([g])=>(g.groep||'Overige')==k).map(([g,i])=>
+'<div class="ex pg" data-pg="'+i+'"><h3><span class="ck">'+(POK[g.id]?OKB:'')+'</span>'+e(g.t)+'</h3>'+(g.bron?'<div class="pt">'+e(g.bron)+'</div>':'')+
 '<div class="wu"><b>🧭 Opdracht</b><br>'+md(g.opdracht)+(g.invoer?'<div class="pt">▶ Uitvoeren typt zelf deze invoer: '+g.invoer.map(v=>'<code>'+e(v)+'</code>').join(', ')+'</div>':'')+'</div>'+
 '<h4>⚠️ Valkuilen</h4><ul>'+g.valkuilen.map(x=>'<li>'+md(x)+'</li>').join('')+'</ul>'+
 (g.extra||[]).map(([k,l])=>'<h4>'+e(k)+'</h4><ul>'+l.map(x=>'<li>'+md(x)+'</li>').join('')+'</ul>').join('')+
-'<div class="pgw"><div class="pgfh"><b>✏️ '+e(g.t)+'</b><button type="button" class="xb" data-pa="fsx">✖ Sluiten</button></div>'+(g.uitvoer?'<div class="pgexp"><div class="lab">🎯 Verwachte uitvoer</div><pre>'+e(g.uitvoer)+'</pre></div>':'')+'<label class="lab" for="pged'+i+'">✏️ Typ je code onder de # uitleg-regels:</label><div class="vsc"><div class="gut" aria-hidden="true">'+pgGut(g.start||'')+'</div><div class="edw"><pre class="hl" aria-hidden="true">'+pgHL(g.start||'')+'</pre><textarea id="pged'+i+'" class="ed pged" wrap="off" rows="'+pgRows(g.start||'')+'" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off">'+e(g.start||'')+'</textarea></div></div>'+
+'<div class="pgw"><div class="pgfh"><b>✏️ '+e(g.t)+'</b><button type="button" class="xb" data-pa="fsx">✖ Sluiten</button></div>'+(g.uitvoer?'<div class="pgexp"><div class="lab">🎯 Verwachte uitvoer</div><pre>'+e(g.uitvoer)+'</pre></div>':'')+'<label class="lab" for="pged'+i+'">✏️ Typ je code onder de # uitleg-regels:</label><div class="vsc"><div class="gut" aria-hidden="true">'+pgGut(pv(g))+'</div><div class="edw"><pre class="hl" aria-hidden="true">'+pgHL(pv(g))+'</pre><textarea id="pged'+i+'" class="ed pged" wrap="off" rows="'+pgRows(pv(g))+'" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off">'+e(pv(g))+'</textarea></div></div>'+
 '<div class="bt"><button type="button" class="xb pri" data-pa="run">▶ Uitvoeren</button> <button type="button" class="xb" data-pa="rs">↺ Herbegin</button> <button type="button" class="xb" data-pa="fs">⛶ Volledig scherm</button> <button type="button" class="xb" data-pa="sol">👀 Toon oplossing</button></div><div class="out"></div></div>'+
 '<div class="pgsol" hidden><div class="lab">Oplossing:</div><pre>'+e(g.oplossing)+'</pre>'+(g.uitvoer?'<div class="lab">Uitvoer:</div><pre>'+e(g.uitvoer)+'</pre>':'')+'<button type="button" class="xb" data-pa="cp">📝 Zet de oplossing in het vak</button></div></div>').join('')).join('');pgSplit();window.scrollTo(0,0)}
 VW.addEventListener('click',ev=>{const t=ev.target.closest('[data-pgg]');if(!t)return;ev.preventDefault();document.getElementById('pgg'+t.dataset.pgg).scrollIntoView({behavior:'smooth'})});
 VW.addEventListener('click',async ev=>{const b=ev.target.closest('[data-pa]');if(!b)return;const box=b.closest('.pg'),g=PG[+box.dataset.pg],ed=box.querySelector('.ed'),out=box.querySelector('.out');
 if(b.dataset.pa=='sol'){const s=box.querySelector('.pgsol');s.hidden=!s.hidden;b.textContent=s.hidden?'👀 Toon oplossing':'🙈 Verberg oplossing';return}
-if(b.dataset.pa=='rs'){if(ed.value!=(g.start||'')&&!confirm('Herbeginnen? Wat je typte, wordt gewist.'))return;ed.value=g.start||'';ed.rows=pgRows(ed.value);pgSync(ed);out.innerHTML='';ed.focus();return}
-if(b.dataset.pa=='cp'){ed.value=g.oplossing;ed.rows=pgRows(g.oplossing);pgSync(ed);return}
+if(b.dataset.pa=='rs'){if(ed.value!=(g.start||'')&&!confirm('Terug naar de startcode? Je eigen code wordt gewist.'+((lsg(LS_PGOK,{})||{})[g.id]?' Je ✅ Opgelost blijft staan.':'')))return;ed.value=g.start||'';svCode(LS_PGC,g.id,g.start||'',g.start||'');ed.rows=pgRows(ed.value);pgSync(ed);out.innerHTML='';ed.focus();return}
+if(b.dataset.pa=='cp'){ed.value=g.oplossing;svCode(LS_PGC,g.id,g.oplossing,g.start||'');ed.rows=pgRows(g.oplossing);pgSync(ed);return}
 if(b.dataset.pa=='fs'){box.classList.add('pgfs');document.body.classList.add('pgfso');ed.focus();return}
 if(b.dataset.pa=='fsx'){box.classList.remove('pgfs');document.body.classList.remove('pgfso');box.scrollIntoView({block:'start'});return}
 if(!ed.value.trim()){out.innerHTML='<div class="bad">✏️ Typ eerst je code in het vak.</div>';return}
@@ -426,8 +430,10 @@ out.innerHTML='<div class="pt">⏳ Python wordt geladen (de eerste keer duurt da
 try{py=await loadPy()}catch(_){out.innerHTML='<div class="bad">😕 Python kon niet geladen worden. Heb je internet? Probeer het straks opnieuw.</div>';return}
 let R;try{R=JSON.parse(py.globals.get('_pf_run')(ed.value,g.invoer?JSON.stringify(g.invoer):null))}catch(x){out.innerHTML='<div class="bad">😕 Er ging iets mis: '+e(String(x))+'</div>';return}
 let h='<div class="lab">Jouw uitvoer:</div><pre>'+(R.o?e(R.o):'<i>(geen uitvoer)</i>')+'</pre>';if(R.e)h+=errHTML(R.e);
-else if(g.uitvoer&&(norm(R.o)==norm(g.uitvoer)||(g.invoer&&norm(R.o).endsWith('\n'+norm(g.uitvoer)))))h='<div class="ok">🎉 Juist! Dit is precies de verwachte uitvoer.</div>'+h;
+else if(g.uitvoer&&(norm(R.o)==norm(g.uitvoer)||(g.invoer&&norm(R.o).endsWith('\n'+norm(g.uitvoer))))){h='<div class="ok">🎉 Juist! Dit is precies de verwachte uitvoer. ✅ Opgelost</div>'+h;pgDone(box,g)}
 else if(g.uitvoer)h=(bijna(R.o,g.uitvoer)||'<div class="bad">🤔 Nog niet wat verwacht wordt: <code>'+e(g.uitvoer)+'</code></div>')+h;out.innerHTML=h});
+function pgDone(box,g){const o=lsg(LS_PGOK,{})||{};if(!o[g.id]){o[g.id]=1;lss(LS_PGOK,o)}box.querySelector('h3 .ck').innerHTML=OKB;const n=PG.filter(x=>o[x.id]).length,c=VW.querySelector('.pgcnt');if(c)c.textContent='✅ '+n+' van de '+PG.length+' opgelost';
+VW.querySelectorAll('[data-pgn]').forEach(a=>{const L=PG.filter(x=>(x.groep||'Overige')==a.dataset.pgn),m=L.filter(x=>o[x.id]).length;a.textContent=a.dataset.pgn+' ('+(m?'✅ '+m+'/':'')+L.length+')'})}
 let pgBusy=false,pgLast='';
 async function pgTry(force){const m=q.value.replace(/\s+/g,' ').trim().match(/^ontgrendel ?(.+)$/i);if(!m)return false;
 const c=m[1].replace(/\s+/g,'').toUpperCase();if(!force&&c.length<16)return true;if(pgBusy||c==pgLast)return true;pgBusy=true;pgLast=c;
@@ -512,7 +518,7 @@ CTA.addEventListener('click',ev=>{const b=ev.target.closest('#ctab');if(!b)retur
 function edCur(t){const ex=t.closest('.ex');if(!ex)return;const x=X[ex.dataset.x];if(!x||x.c==null||t.value!==x.k||t.dataset.moved)return;t.setSelectionRange(x.c,x.c)}
 document.addEventListener('focusin',ev=>{const t=ev.target;if(t.classList&&t.classList.contains('ed')){edCur(t);setTimeout(()=>edCur(t),0)}});
 document.addEventListener('click',ev=>{const t=ev.target;if(t.classList&&t.classList.contains('ed'))edCur(t)});
-document.addEventListener('input',ev=>{const t=ev.target;if(t.classList&&t.classList.contains('ed'))t.dataset.moved=1});
+document.addEventListener('input',ev=>{const t=ev.target;if(t.classList&&t.classList.contains('ed'))t.dataset.moved=1;const ex=t.closest&&t.closest('.ex');if(!ex||!t.classList.contains('ed'))return;if(ex.dataset.x&&X[ex.dataset.x])svCode(LS_CODE,ex.dataset.x,t.value,X[ex.dataset.x].k);else if(ex.dataset.pg!=null&&PG){const g=PG[+ex.dataset.pg];svCode(LS_PGC,g.id,t.value,g.start||'')}});
 
 route();if(lsg(LS_ONB,null)==null&&!location.hash.startsWith('#import='))obShow();
 </script><script data-goatcounter="https://pyslang.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script><script>addEventListener("hashchange",function(){if(window.goatcounter&&window.goatcounter.count)window.goatcounter.count({path:location.pathname+location.hash})});</script><script>(function(){var M=["auto","light","dark"],I={auto:"🌗",light:"☀️",dark:"🌙"},L={auto:"automatisch (volgt je toestel)",light:"licht",dark:"donker"},b=document.getElementById("thm"),mq=matchMedia("(prefers-color-scheme: dark)");
