@@ -297,7 +297,7 @@ try{if(!s.startsWith('PF1:'))throw 0;const o=JSON.parse(decodeURIComponent(escap
 catch(_){st.textContent=' 😕 Die code klopt niet. Kopieer ze opnieuw, volledig.'}};
 document.getElementById('rst').onclick=()=>{if(confirm('Ben je zeker? Al je vinkjes en je bladwijzer worden gewist. Dit kan niet ongedaan worden.')){DONE={};lss(LS_DONE,null);lss(LS_BM,null);prog()}}}
 let CURV='zoek';
-function route(){pnClose();const h=decodeURIComponent(location.hash.slice(1)),[v,a]=h.split('/');if(v=='traject')return trView();trHide();if(v=='meenemen'||v.startsWith('import='))return meeView(v.startsWith('import=')?h.slice(7):null);let t=v||'zoek';
+function route(){pnClose();const h=decodeURIComponent(location.hash.slice(1)),[v,a]=h.split('/');if(v=='traject')return trView();trHide();if(v=='pg'||v=='vergrendel'||v.startsWith('ontgrendel='))return pgRoute(v);if(v=='meenemen'||v.startsWith('import='))return meeView(v.startsWith('import=')?h.slice(7):null);let t=v||'zoek';
 t={les:'leerpad',fout:'fouten',project:'projecten'}[t]||t;if(!['zoek','leerpad','fouten','projecten','vooruitgang'].includes(t))t='zoek';CURV=t;
 document.querySelectorAll('#tabs a').forEach(x=>x.classList.toggle('on',x.dataset.t==t));
 MM.hidden=t!='zoek';VW.hidden=t=='zoek';['all','ken','cnt'].forEach(k=>document.getElementById(k).hidden=t!='zoek');
@@ -337,6 +337,47 @@ document.getElementById('meecp').onclick=ev=>cpy(ce.value,ev.currentTarget);
 document.getElementById('meeqr').onclick=()=>{const bx=document.getElementById('meeqrbox');try{const q=qrcode(0,'L');q.addData(url,'Byte');q.make();bx.innerHTML='<div class="qr">'+q.createSvgTag({cellSize:4,margin:4,scalable:true})+'</div><div class="pt">Scan deze code met de camera van het nieuwe toestel.</div>'}catch(_){bx.innerHTML='<div class="bad">De voortgang is te groot voor een QR-code. Gebruik dan Kopieer en plak de code op het andere toestel.</div>'}};
 document.getElementById('meeld').onclick=()=>meeAsk(document.getElementById('meein').value,document.getElementById('meeout'));
 if(imp)document.getElementById('meeyes').onclick=()=>meeAsk(imp,document.getElementById('meeio'));window.scrollTo(0,0)}
+
+/* ---- Mijn probleemgevallen (verborgen, alleen op ontgrendelde toestellen) ---- */
+const PG_KEY='sw_pg';let PG=null;
+const pgB=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function pgDecrypt(code){const r=await fetch('probleemgevallen.json',{cache:'no-cache'});const f=await r.json();
+const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(code),'PBKDF2',false,['deriveKey']);
+const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:pgB(f.salt),iterations:f.it,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:pgB(f.iv)},key,pgB(f.ct))))}
+function pgCode(){try{return localStorage.getItem(PG_KEY)}catch(_){return null}}
+function pgTab(){const nav=document.getElementById('tabs');let a=document.getElementById('pgtab');
+if(pgCode()){if(!a){a=document.createElement('a');a.id='pgtab';a.href='#pg';a.dataset.t='pg';a.textContent='🧩 Mijn probleemgevallen';nav.appendChild(a)}}else if(a)a.remove()}
+async function pgUnlock(code){code=String(code||'').trim().toUpperCase();try{PG=await pgDecrypt(code)}catch(_){return false}
+localStorage.setItem(PG_KEY,code);pgTab();return true}
+function pgShell(){document.querySelectorAll('#tabs a').forEach(x=>x.classList.toggle('on',x.id=='pgtab'));MM.hidden=true;VW.hidden=false;['all','ken','cnt'].forEach(k=>document.getElementById(k).hidden=true);CURV='pg'}
+async function pgRoute(v){if(v.startsWith('ontgrendel=')){const ok=await pgUnlock(decodeURIComponent(v.slice(11)));history.replaceState(null,'',location.pathname+(ok?'#pg':'#zoek'));if(!ok)return route();}
+else if(v=='vergrendel'){localStorage.removeItem(PG_KEY);PG=null;pgTab();history.replaceState(null,'',location.pathname+'#zoek');return route()}
+const c=pgCode();if(!c){history.replaceState(null,'',location.pathname+'#zoek');return route()}
+pgShell();VW.innerHTML='<p>⏳ Even laden...</p>';if(!PG){try{PG=await pgDecrypt(c)}catch(_){VW.innerHTML='<div class="bad">😕 De probleemgevallen konden niet geladen worden. Heb je internet? Of is de code veranderd? Ontgrendel dan opnieuw met de nieuwe link.</div>';return}}
+const GR=[];PG.forEach(g=>{const k=g.groep||'Overige';if(!GR.includes(k))GR.push(k)});
+VW.innerHTML='<h2>🧩 Mijn probleemgevallen</h2><p>Oefeningen waar je vastzat, met de valkuilen en uitleg. Probeer ze eerst zelf opnieuw in het vak. Kijk pas daarna naar de oplossing.</p><p>'+GR.map((k,j)=>'<a class="xb" href="#pg" data-pgg="'+j+'">'+e(k)+' ('+PG.filter(g=>(g.groep||'Overige')==k).length+')</a>').join(' ')+'</p>'+GR.map((k,j)=>'<h2 id="pgg'+j+'">📂 '+e(k)+'</h2>'+PG.map((g,i)=>[g,i]).filter(([g])=>(g.groep||'Overige')==k).map(([g,i])=>
+'<div class="ex pg" data-pg="'+i+'"><h3>'+e(g.t)+'</h3>'+(g.bron?'<div class="pt">'+e(g.bron)+'</div>':'')+
+'<div class="wu"><b>🧭 Opdracht</b><br>'+md(g.opdracht)+(g.invoer?'<div class="pt">▶ Uitvoeren typt zelf deze invoer: '+g.invoer.map(v=>'<code>'+e(v)+'</code>').join(', ')+'</div>':'')+'</div>'+
+'<h4>⚠️ Valkuilen</h4><ul>'+g.valkuilen.map(x=>'<li>'+md(x)+'</li>').join('')+'</ul>'+
+(g.extra||[]).map(([k,l])=>'<h4>'+e(k)+'</h4><ul>'+l.map(x=>'<li>'+md(x)+'</li>').join('')+'</ul>').join('')+
+'<label class="lab" for="pged'+i+'">✏️ Probeer het zelf:</label><textarea id="pged'+i+'" class="ed" rows="'+rows(g.start||'\n\n\n\n')+'" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off">'+e(g.start||'')+'</textarea>'+
+'<div class="bt"><button type="button" class="xb pri" data-pa="run">▶ Uitvoeren</button> <button type="button" class="xb" data-pa="sol">👀 Toon oplossing</button></div><div class="out"></div>'+
+'<div class="pgsol" hidden><div class="lab">Oplossing:</div><pre>'+e(g.oplossing)+'</pre>'+(g.uitvoer?'<div class="lab">Uitvoer:</div><pre>'+e(g.uitvoer)+'</pre>':'')+'<button type="button" class="xb" data-pa="cp">📝 Zet de oplossing in het vak</button></div></div>').join('')).join('');window.scrollTo(0,0)}
+VW.addEventListener('click',ev=>{const t=ev.target.closest('[data-pgg]');if(!t)return;ev.preventDefault();document.getElementById('pgg'+t.dataset.pgg).scrollIntoView({behavior:'smooth'})});
+VW.addEventListener('click',async ev=>{const b=ev.target.closest('[data-pa]');if(!b)return;const box=b.closest('.pg'),g=PG[+box.dataset.pg],ed=box.querySelector('.ed'),out=box.querySelector('.out');
+if(b.dataset.pa=='sol'){const s=box.querySelector('.pgsol');s.hidden=!s.hidden;b.textContent=s.hidden?'👀 Toon oplossing':'🙈 Verberg oplossing';return}
+if(b.dataset.pa=='cp'){ed.value=g.oplossing;ed.rows=rows(g.oplossing);return}
+if(!ed.value.trim()){out.innerHTML='<div class="bad">✏️ Typ eerst je code in het vak.</div>';return}
+out.innerHTML='<div class="pt">⏳ Python wordt geladen (de eerste keer duurt dat even)...</div>';let py;
+try{py=await loadPy()}catch(_){out.innerHTML='<div class="bad">😕 Python kon niet geladen worden. Heb je internet? Probeer het straks opnieuw.</div>';return}
+let R;try{R=JSON.parse(py.globals.get('_pf_run')(ed.value,g.invoer?JSON.stringify(g.invoer):null))}catch(x){out.innerHTML='<div class="bad">😕 Er ging iets mis: '+e(String(x))+'</div>';return}
+let h='<div class="lab">Jouw uitvoer:</div><pre>'+(R.o?e(R.o):'<i>(geen uitvoer)</i>')+'</pre>';if(R.e)h+=errHTML(R.e);
+else if(g.uitvoer&&(norm(R.o)==norm(g.uitvoer)||(g.invoer&&norm(R.o).endsWith('\n'+norm(g.uitvoer)))))h='<div class="ok">🎉 Juist! Dit is precies de verwachte uitvoer.</div>'+h;
+else if(g.uitvoer)h=(bijna(R.o,g.uitvoer)||'<div class="bad">🤔 Nog niet wat verwacht wordt: <code>'+e(g.uitvoer)+'</code></div>')+h;out.innerHTML=h});
+q.addEventListener('keydown',async ev=>{if(ev.key!='Enter')return;const m=q.value.trim().match(/^ontgrendel\s+(\S+)$/i);if(!m)return;ev.preventDefault();
+const ok=await pgUnlock(m[1]);q.value='';if(ok)location.hash='pg'});
+pgTab();
 
 window.addEventListener('hashchange',route);
 q.addEventListener('input',()=>{if(CURV!='zoek')location.hash='zoek'});
