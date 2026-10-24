@@ -35,7 +35,7 @@ main{max-width:900px;margin:auto;padding:16px}h2{color:var(--b);font-size:1.35em
 .ex{background:var(--bg);border:1px solid var(--ln);border-radius:var(--r);padding:14px 16px;margin:14px 0}.ex h4{margin:0 0 6px;color:var(--b);font-size:1em}
 @media(prefers-color-scheme:dark){html:not([data-theme=light]) .ex h4{color:var(--y)}}html[data-theme=dark] .ex h4{color:var(--y)}.fn{font-family:ui-monospace,Consolas,monospace;font-size:.9em}
 .hb{background:#fff7d1;color:#18202b;border-radius:8px;padding:10px 12px;margin-top:8px}.sol{margin-top:8px}
-#cfg{margin-left:0!important;padding:3px 10px!important}#pn{margin-top:10px;background:var(--card);color:var(--fg);border:1px solid var(--ln);border-radius:var(--r);padding:12px 14px}#pn input{margin:6px 0;font-size:1em}.pt{font-size:.85em;color:var(--mut)}
+#cfg{margin-left:0!important;padding:3px 10px!important}#pn{margin-top:10px;background:var(--card);color:var(--fg);border:1px solid var(--ln);border-radius:var(--r);padding:12px 14px}#pn input,#v input[type=text],#v input[type=password]{margin:6px 0;font-size:1em}.pt{font-size:.85em;color:var(--mut)}
 nav#tabs{display:flex;gap:2px;overflow-x:auto;margin-top:8px;padding:3px;background:#0000002e;border-radius:999px;scrollbar-width:none;-webkit-overflow-scrolling:touch;width:max-content;max-width:100%}nav#tabs::-webkit-scrollbar{display:none}
 @media(min-width:901px){nav#tabs{margin-left:max(0px,calc((100% - 900px)/2))}}
 nav#tabs a{flex:none;color:#ffffffd0;text-decoration:none;padding:5px 14px;border-radius:999px;font-size:.88em;white-space:nowrap}
@@ -100,7 +100,7 @@ body.trm{padding-bottom:190px}html:has(body.trm){scroll-padding-bottom:140px}.tr
 .vsc .pged{margin:0!important}</style></head><body>
 <header><h1><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110"><path fill="#3776AB" d="M54 2C27 2 29 14 29 14v12h26v4H18S2 28 2 55s14 26 14 26h9V68s0-14 14-14h24s13 0 13-13V16S78 2 54 2zM40 10a5 5 0 1 1 0 10a5 5 0 0 1 0-10z"/><path fill="#FFD43B" d="M56 108c27 0 25-12 25-12V84H55v-4h37s16 2 16-25-14-26-14-26h-9v13s0 14-14 14H47s-13 0-13 13v25s-2 14 22 14zm14-8a5 5 0 1 1 0-10a5 5 0 0 1 0 10z"/></svg> Wouzie's Slangwijs</h1><div class="sw"><input id="q" type="search" placeholder="Zoek… bv. lengte, tekst, lijst" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="sg"><div id="sg" role="listbox"></div></div>
 <div class="bar" id="bar"><button id="all" class="on">Alles</button><button id="ken">⭐ Ken ik al</button><span id="cnt"></span><button id="thm" aria-label="Thema: automatisch">🌗</button><button id="cfg" aria-label="Instellingen" aria-expanded="false" aria-controls="pn">⚙️</button></div>
-<div id="pn" hidden><label for="dir"><b>📁 Mijn oefenmap</b></label><input id="dir" type="text" placeholder="bv. C:\MijnOefeningen" autocomplete="off" spellcheck="false"><div class="pt">Vul de map in waar je je oefeningen bewaart. Dan zie je bij elke oefening het volledige pad bij "Bewaar als". Laat je het leeg, dan zie je enkel de bestandsnaam. Dit wordt alleen op dit toestel onthouden, niet online.</div><a class="xb" id="meelink" href="#meenemen" style="display:inline-block;margin-top:10px">📲 Voortgang meenemen naar een ander toestel</a></div><nav id="tabs"><a href="#zoek" data-t="zoek">🔎 Opzoeken</a><a href="#leerpad" data-t="leerpad">📚 Leerpad</a><a href="#fouten" data-t="fouten">🩺 Foutmeldingen</a><a href="#projecten" data-t="projecten">🛠️ Projecten</a><a href="#vooruitgang" data-t="vooruitgang">📊 Vooruitgang</a></nav></header>
+<div id="pn" hidden><label for="dir"><b>📁 Mijn oefenmap</b></label><input id="dir" type="text" placeholder="bv. C:\MijnOefeningen" autocomplete="off" spellcheck="false"><div class="pt">Vul de map in waar je je oefeningen bewaart. Dan zie je bij elke oefening het volledige pad bij "Bewaar als". Laat je het leeg, dan zie je enkel de bestandsnaam. Dit wordt alleen op dit toestel onthouden, niet online.</div><a class="xb" id="meelink" href="#meenemen" style="display:inline-block;margin-top:10px">📲 Voortgang meenemen naar een ander toestel</a><br><a class="xb" href="#sync" style="display:inline-block;margin-top:8px">🔄 Synchroniseren (gsm en laptop)</a><div class="pt synst"></div></div><nav id="tabs"><a href="#zoek" data-t="zoek">🔎 Opzoeken</a><a href="#leerpad" data-t="leerpad">📚 Leerpad</a><a href="#fouten" data-t="fouten">🩺 Foutmeldingen</a><a href="#projecten" data-t="projecten">🛠️ Projecten</a><a href="#vooruitgang" data-t="vooruitgang">📊 Vooruitgang</a></nav></header>
 <div id="cta" hidden></div><main id="m"></main><main id="v" hidden></main><script type="text/x-python" id="pyh">import sys, io, json
 from js import prompt as _jsprompt
 class _PfStop(Exception): pass
@@ -336,7 +336,7 @@ try{if(!s.startsWith('PF1:'))throw 0;const o=JSON.parse(decodeURIComponent(escap
 catch(_){st.textContent=' 😕 Die code klopt niet. Kopieer ze opnieuw, volledig.'}};
 document.getElementById('rst').onclick=()=>{if(confirm('Ben je zeker? Al je vinkjes en je bladwijzer worden gewist. Dit kan niet ongedaan worden.')){DONE={};lss(LS_DONE,null);lss(LS_BM,null);prog()}}}
 let CURV='zoek';
-function route(){pnClose();const h=decodeURIComponent(location.hash.slice(1)),[v,a]=h.split('/');if(v=='traject')return trView();trHide();if(v=='pg'||v=='vergrendel'||v.startsWith('ontgrendel='))return pgRoute(v);if(v=='meenemen'||v.startsWith('import='))return meeView(v.startsWith('import=')?h.slice(7):null);let t=v||'zoek';
+function route(){pnClose();const h=decodeURIComponent(location.hash.slice(1)),[v,a]=h.split('/');if(v=='traject')return trView();trHide();if(v=='pg'||v=='vergrendel'||v.startsWith('ontgrendel='))return pgRoute(v);if(v=='sync')return syView();if(v=='meenemen'||v.startsWith('import='))return meeView(v.startsWith('import=')?h.slice(7):null);let t=v||'zoek';
 t={les:'leerpad',fout:'fouten',project:'projecten'}[t]||t;if(!['zoek','leerpad','fouten','projecten','vooruitgang'].includes(t))t='zoek';CURV=t;
 document.querySelectorAll('#tabs a').forEach(x=>x.classList.toggle('on',x.dataset.t==t));
 MM.hidden=t!='zoek';VW.hidden=t=='zoek';['all','ken','cnt'].forEach(k=>document.getElementById(k).hidden=t!='zoek');
@@ -532,6 +532,64 @@ function edCur(t){const ex=t.closest('.ex');if(!ex)return;const x=X[ex.dataset.x
 document.addEventListener('focusin',ev=>{const t=ev.target;if(t.classList&&t.classList.contains('ed')){edCur(t);setTimeout(()=>edCur(t),0)}});
 document.addEventListener('click',ev=>{const t=ev.target;if(t.classList&&t.classList.contains('ed'))edCur(t)});
 document.addEventListener('input',ev=>{const t=ev.target;if(t.classList&&t.classList.contains('ed'))t.dataset.moved=1;const ex=t.closest&&t.closest('.ex');if(!ex||!t.classList.contains('ed'))return;if(ex.dataset.x&&X[ex.dataset.x])svCode(LS_CODE,ex.dataset.x,t.value,X[ex.dataset.x].k);else if(ex.dataset.pg!=null&&PG){const g=PG[+ex.dataset.pg];svCode(LS_PGC,g.id,t.value,g.start||'')}});
+
+/* ---- Synchroniseren via een geheime GitHub Gist (optioneel) ---- */
+const SY_TOK='sws_tok',SY_GID='sws_gist',SY_BASE='sws_base',SY_FILE='slangwijs-voortgang.json',SY_API='https://api.github.com/gists';
+const syGet=k=>{try{return localStorage.getItem(k)||''}catch(_){return ''}},sySet=(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(_){}};
+const syFlag=k=>k==LS_DONE||k==LS_PGOK;
+function syData(){const o=meeData();delete o.pf_theme;return o}
+function syPj(s){try{const v=JSON.parse(s);return v&&typeof v=='object'&&!Array.isArray(v)?v:null}catch(_){return null}}
+function syMerge(L,R,B){const out={};const ks=new Set([...Object.keys(L),...Object.keys(R)].sort());
+ks.forEach(k=>{const l=L[k],r=R[k],b=B[k];if(l==null){out[k]=r;return}if(r==null||l===r){out[k]=l;return}
+const lo=syPj(l),ro=syPj(r);if(lo&&ro){const bo=syPj(b)||{},m={};new Set([...Object.keys(lo),...Object.keys(ro)]).forEach(s=>{const a=lo[s],c=ro[s];
+if(a===undefined){m[s]=c;return}if(c===undefined||JSON.stringify(a)===JSON.stringify(c)){m[s]=a;return}
+if(syFlag(k)){m[s]=(typeof a=='number'&&typeof c=='number')?Math.max(a,c):(a||c);return}
+if(typeof a=='number'&&typeof c=='number'){m[s]=Math.max(a,c);return}
+m[s]=JSON.stringify(a)===JSON.stringify(bo[s])?c:a});const so={};Object.keys(m).sort().forEach(x=>so[x]=m[x]);out[k]=JSON.stringify(so);return}
+const ln=+l,rn=+r;if(l.trim()!==''&&r.trim()!==''&&!isNaN(ln)&&!isNaN(rn)){out[k]=String(Math.max(ln,rn));return}
+out[k]=l===b?r:l});return out}
+let syMsg='',syBusy=false,syLast='',syT=0;
+function syStatus(m){syMsg=m;document.querySelectorAll('.synst').forEach(e=>e.textContent=m)}
+const syHm=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+function syHdr(){return{'Authorization':'Bearer '+syGet(SY_TOK),'Accept':'application/vnd.github+json','Content-Type':'application/json'}}
+function syErr(st){return st==401?'Synchroniseren lukt niet: de token klopt niet of is verlopen.':st==403?'Synchroniseren lukt niet: de token heeft geen Gist-toestemming.':st==404?'Synchroniseren lukt niet: de gist is niet gevonden. Kijk het gist-id na.':'Synchroniseren lukt nu niet. Ik probeer het later opnieuw.'}
+const syEditing=()=>{const a=document.activeElement;return a&&(a.tagName=='TEXTAREA'||a.tagName=='INPUT')};
+async function syRun(first){if(syBusy||!syGet(SY_TOK)||!syGet(SY_GID))return;if(!navigator.onLine){syStatus('Offline: je voortgang wordt later gesynchroniseerd.');return}
+syBusy=true;try{const r=await fetch(SY_API+'/'+encodeURIComponent(syGet(SY_GID)),{headers:syHdr(),cache:'no-store'});if(!r.ok){syStatus(syErr(r.status));return}
+const g=await r.json(),f=g.files&&g.files[SY_FILE];let R={};if(f){let c=f.content;if(f.truncated&&f.raw_url){const rr=await fetch(f.raw_url,{cache:'no-store'});c=await rr.text()}const p=syPj(c);if(p&&p.d&&typeof p.d=='object')R=p.d}
+const L=syData(),B=syPj(syGet(SY_BASE))||{},M=syMerge(L,R,B);let ch=false;
+for(const k in M){if(typeof M[k]=='string'&&/^pf[-_]/.test(k)&&L[k]!==M[k]){try{localStorage.setItem(k,M[k]);ch=true}catch(_){}}}
+const ms=JSON.stringify(M);if(ms!==JSON.stringify(R)){const w=await fetch(SY_API+'/'+encodeURIComponent(syGet(SY_GID)),{method:'PATCH',headers:syHdr(),body:JSON.stringify({files:{[SY_FILE]:{content:JSON.stringify({app:'Slangwijs',v:1,t:new Date().toISOString(),d:M})}}})});if(!w.ok){syStatus(syErr(w.status));return}}
+sySet(SY_BASE,ms);syLast=JSON.stringify(syData());syStatus('Gesynchroniseerd om '+syHm());
+if(ch){if(!syEditing()){location.reload()}else syStatus('Nieuwe voortgang van je andere toestel is geladen. Herlaad de pagina om ze te zien.')}}
+catch(_){syStatus('Offline: je voortgang wordt later gesynchroniseerd.')}finally{syBusy=false}}
+function syKick(){clearTimeout(syT);syT=setTimeout(()=>syRun(false),3000)}
+setInterval(()=>{if(!syGet(SY_TOK)||!syGet(SY_GID))return;const s=JSON.stringify(syData());if(s!==syLast){syLast=s;syKick()}},4000);
+document.addEventListener('visibilitychange',()=>{if(!syGet(SY_GID))return;if(document.visibilityState=='visible')syRun(false);else{const s=JSON.stringify(syData());if(s!==syLast){clearTimeout(syT);syRun(false)}}});
+window.addEventListener('online',()=>syRun(false));
+async function syCreate(out){if(!syGet(SY_TOK)){out.innerHTML='<div class="bad">Plak eerst je token en tik op Bewaar.</div>';return}
+out.innerHTML='<div class="pt">Bezig met een geheime gist maken...</div>';
+try{const r=await fetch(SY_API,{method:'POST',headers:syHdr(),body:JSON.stringify({description:'Slangwijs voortgang (automatisch)',public:false,files:{[SY_FILE]:{content:JSON.stringify({app:'Slangwijs',v:1,t:new Date().toISOString(),d:syData()})}}})});
+if(!r.ok){out.innerHTML='<div class="bad">'+e(syErr(r.status))+'</div>';return}const g=await r.json();sySet(SY_GID,g.id);sySet(SY_BASE,JSON.stringify(syData()));
+out.innerHTML='<div class="ok">Gelukt! Je geheime gist is gemaakt. Gist-id voor je andere toestel:</div><input type="text" class="syid" readonly value="'+ea(g.id)+'"><button type="button" class="xb" id="sycpid">📋 Kopieer gist-id</button>';
+document.getElementById('sygid').value=g.id;document.getElementById('sycpid').onclick=ev=>cpy(g.id,ev.currentTarget);syRun(false)}catch(_){out.innerHTML='<div class="bad">Geen verbinding. Probeer het opnieuw als je online bent.</div>'}}
+function syView(){document.querySelectorAll('#tabs a').forEach(x=>x.classList.remove('on'));MM.hidden=true;VW.hidden=false;['all','ken','cnt'].forEach(k=>document.getElementById(k).hidden=true);CURV='sync';
+const has=!!syGet(SY_TOK);
+VW.innerHTML='<h2>🔄 Synchroniseren</h2><p>Hou je voortgang automatisch gelijk op je gsm en je laptop. Je voortgang wordt bewaard in een <b>geheime gist</b> op je eigen GitHub-account. Dit is niet verplicht: zonder token blijft alles gewoon op dit toestel.</p>'+
+'<p class="synst pt">'+e(syMsg||(syGet(SY_GID)&&has?'Nog niet gesynchroniseerd.':'Synchroniseren staat uit.'))+'</p>'+
+'<label class="lab" for="sytok"><b>Token</b> (fine-grained, alleen Gists)</label><input id="sytok" type="password" autocomplete="off" spellcheck="false" placeholder="'+(has?'Token is bewaard (plak een nieuwe om te vervangen)':'Plak hier je token')+'">'+
+'<label class="lab" for="sygid"><b>Gist-id</b></label><input id="sygid" type="text" autocomplete="off" spellcheck="false" placeholder="Leeg laten op je eerste toestel" value="'+ea(syGet(SY_GID))+'">'+
+'<p><button type="button" class="xb pri" id="sysave">Bewaar en synchroniseer</button> <button type="button" class="xb" id="synew">Maak een nieuwe geheime gist</button> <button type="button" class="xb" id="syoff">Zet synchroniseren uit</button></p><div id="syout"></div>'+
+'<p class="pt">De token en het gist-id worden alleen op dit toestel bewaard, niet in de app of online. Je voortgang wordt samengevoegd: wat op een van beide toestellen klaar is, blijft klaar.</p>';
+const out=document.getElementById('syout');
+document.getElementById('sysave').onclick=()=>{const t=document.getElementById('sytok').value.trim(),gi=document.getElementById('sygid').value.trim();if(t)sySet(SY_TOK,t);
+if(!syGet(SY_TOK)){out.innerHTML='<div class="bad">Plak eerst je token.</div>';return}
+if(!gi){out.innerHTML='<div class="pt">Nog geen gist-id. Is dit je eerste toestel? Tik dan op <b>Maak een nieuwe geheime gist</b>. Op je tweede toestel plak je het gist-id van je eerste toestel.</div>';return}
+if(gi!==syGet(SY_GID)){sySet(SY_GID,gi);sySet(SY_BASE,'')}document.getElementById('sytok').value='';out.innerHTML='<div class="pt">Bezig...</div>';syRun(false).then(()=>{out.innerHTML=''})};
+document.getElementById('synew').onclick=()=>{const t=document.getElementById('sytok').value.trim();if(t)sySet(SY_TOK,t);document.getElementById('sytok').value='';
+if(syGet(SY_GID)&&!confirm('Er is al een gist-id ingesteld. Toch een nieuwe gist maken?'))return;syCreate(out)};
+document.getElementById('syoff').onclick=()=>{if(!confirm('Synchroniseren uitzetten op dit toestel? Je voortgang blijft gewoon staan.'))return;[SY_TOK,SY_GID,SY_BASE].forEach(k=>sySet(k,''));syMsg='';syView()}}
+if(syGet(SY_TOK)&&syGet(SY_GID))setTimeout(()=>syRun(true),800);
 
 route();if(lsg(LS_ONB,null)==null&&!location.hash.startsWith('#import='))obShow();
 </script><script data-goatcounter="https://pyslang.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script><script>addEventListener("hashchange",function(){if(window.goatcounter&&window.goatcounter.count)window.goatcounter.count({path:location.pathname+location.hash})});</script><script>(function(){var M=["auto","light","dark"],I={auto:"🌗",light:"☀️",dark:"🌙"},L={auto:"automatisch (volgt je toestel)",light:"licht",dark:"donker"},b=document.getElementById("thm"),mq=matchMedia("(prefers-color-scheme: dark)");
