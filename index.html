@@ -332,7 +332,7 @@ document.querySelectorAll('.fn[data-f]').forEach(s=>s.textContent=fp(s.dataset.f
 const VW=document.getElementById('v'),MM=document.getElementById('m'),BAR=document.getElementById('bar');
 const pbar=(d,t)=>'<div class="pb" role="progressbar" aria-valuenow="'+d+'" aria-valuemax="'+t+'"><div style="width:'+(t?Math.round(100*d/t):0)+'%"></div></div>';
 function lpOverview(){const bm=lsg(LS_BM,0);let h='<h2>📚 Leerpad</h2><p>'+LSN.length+' lessen, van heel eenvoudig naar moeilijker. Lees de uitleg, bekijk de voorbeelden, en los dan de oefeningen op. Eerst zelf nadenken, de hint en de oplossing zijn er als je vastzit.</p>';
-if(bm&&LSN[bm-1])h+='<a class="lk big" href="#les/'+bm+'">📌 Hier gebleven: Les '+bm+' – '+e(LSN[bm-1].t)+' →</a>';
+h+='<a class="lk big" href="#willekeurig">🎲 Willekeurige oefening (uit lessen die je al zag) →</a>';if(bm&&LSN[bm-1])h+='<a class="lk big" href="#les/'+bm+'">📌 Hier gebleven: Les '+bm+' – '+e(LSN[bm-1].t)+' →</a>';
 h+=LSN.map((L,k)=>'<a class="lk" href="#les/'+(k+1)+'"><b>Les '+(k+1)+'</b> '+e(L.t)+' '+cpS('l|'+(k+1)+'|',L.x.length,'full')+'</a>').join('');VW.innerHTML=h}
 function lesson(n){const L=LSN[n-1];if(!L)return lpOverview();lss(LS_BM,n);
 let h='<div class="nv"><a href="#leerpad">← Alle lessen</a><span>Opgelost: '+cpS('l|'+n+'|',L.x.length,'full')+'</span></div><h2>Les '+n+': '+e(L.t)+'</h2>'+L.u.map(p=>'<p>'+md(p)+'</p>').join('')+
@@ -356,7 +356,7 @@ h+='<h3>Projecten</h3>'+row('Projecten','p|',PR.length,'projecten');
 h+='<h3>Opzoeken</h3>'+Object.keys(T).map(g=>row(e(T[g]),'c|'+g+'|',D.filter(i=>i.g==g).reduce((s,i)=>s+i.x.length,0))).join('');
 h+='<h3>Overzetten naar een ander toestel</h3><p class="pt">Je vooruitgang wordt alleen op dit toestel bewaard. Kopieer de code hieronder en plak ze op je andere toestel (gsm of laptop) in het vak "Code plakken".</p><textarea id="exc" class="ed" rows="3" readonly></textarea><button class="xb" id="exb">📋 Kopieer mijn code</button>'+
 '<textarea id="imc" class="ed" rows="3" placeholder="Code plakken"></textarea><button class="xb" id="imb">📥 Code inlezen</button><span id="ims" class="pt"></span>'+
-'<h3>Opnieuw beginnen</h3><button class="xb" id="rst">🗑️ Vooruitgang wissen</button>';VW.innerHTML=h;
+'<h3>🎲 Herhalen</h3><a class="lk big" href="#willekeurig">🎲 Willekeurige oefening (uit lessen die je al zag) →</a><h3>Opnieuw beginnen</h3><button class="xb" id="rst">🗑️ Vooruitgang wissen</button>';VW.innerHTML=h;
 const code='PF1:'+btoa(unescape(encodeURIComponent(JSON.stringify({d:Object.keys(DONE),b:lsg(LS_BM,0)}))));document.getElementById('exc').value=code;
 document.getElementById('exb').onclick=ev=>cpy(code,ev.target);
 document.getElementById('imb').onclick=()=>{const s=document.getElementById('imc').value.trim(),st=document.getElementById('ims');
@@ -364,7 +364,15 @@ try{if(!s.startsWith('PF1:'))throw 0;const o=JSON.parse(decodeURIComponent(escap
 catch(_){st.textContent=' 😕 Die code klopt niet. Kopieer ze opnieuw, volledig.'}};
 document.getElementById('rst').onclick=()=>{if(confirm('Ben je zeker? Al je vinkjes, je bladwijzer en je plaats in het begeleid traject worden gewist. Je begint opnieuw bij les 1. Dit kan niet ongedaan worden.')){DONE={};lss(LS_DONE,{});lss(LS_BM,0);lss('pf_tr',{l:1,s:0});lss('pf_reset',Date.now());if(typeof syPush=='function')syPush();prog()}}}
 let CURV='zoek';
-function route(){pnClose();const h=decodeURIComponent(location.hash.slice(1)),[v,a]=h.split('/');if(v=='traject')return trView();trHide();if(v=='pg'||v=='vergrendel'||v.startsWith('ontgrendel='))return pgRoute(v);if(v=='sync')return syView();if(v=='meenemen'||v.startsWith('import='))return meeView(v.startsWith('import=')?h.slice(7):null);let t=v||'zoek';
+/* ---- Willekeurige oefening (enkel lessen die je al zag; raakt traject en vooruitgang niet) ---- */
+function rndMax(){let m=1;const t=lsg('pf_tr',null);if(t&&+t.l>=1)m=Math.max(m,Math.min(LSN.length,Math.round(+t.l)));const bm=+lsg(LS_BM,0);if(bm>=1)m=Math.max(m,Math.min(LSN.length,bm));Object.keys(DONE).forEach(k=>{const z=/^l\|(\d+)\|/.exec(k);if(z)m=Math.max(m,Math.min(LSN.length,+z[1]))});return m}
+let RNDL='';
+function rndView(){CURV='willekeurig';document.querySelectorAll('#tabs a').forEach(x=>x.classList.toggle('on',x.dataset.t=='leerpad'));MM.hidden=true;VW.hidden=false;['all','ken','cnt'].forEach(k=>{const z=document.getElementById(k);if(z)z.hidden=true});const c=document.getElementById('cta');if(c)c.hidden=true;
+const m=rndMax(),P=[];for(let n=1;n<=m;n++)LSN[n-1].x.forEach((x,k)=>P.push([n,k]));let q=P[Math.floor(Math.random()*P.length)];if(P.length>1)while(q[0]+'|'+q[1]==RNDL)q=P[Math.floor(Math.random()*P.length)];RNDL=q[0]+'|'+q[1];
+const [n,k]=q,L=LSN[n-1],x=L.x[k];
+VW.innerHTML='<div class="nv"><a href="#leerpad">← Leerpad</a><span class="pt">Uit les 1 tot en met '+m+'</span></div><h2>🎲 Willekeurige oefening</h2><p class="pt">Les '+n+': '+e(L.t)+'</p>'+exHTML(x,'Les '+n+' · Oefening '+(k+1),x.t)+'<div class="nv"><span></span><button class="xb pri" id="rndn">🎲 Nog een</button></div>';
+document.getElementById('rndn').onclick=()=>{rndView();window.scrollTo(0,0)};if(typeof updCounters=='function')updCounters()}
+function route(){pnClose();const h=decodeURIComponent(location.hash.slice(1)),[v,a]=h.split('/');if(v=='traject')return trView();trHide();if(v=='pg'||v=='vergrendel'||v.startsWith('ontgrendel='))return pgRoute(v);if(v=='sync')return syView();if(v=='willekeurig')return rndView();if(v=='meenemen'||v.startsWith('import='))return meeView(v.startsWith('import=')?h.slice(7):null);let t=v||'zoek';
 t={les:'leerpad',fout:'fouten',project:'projecten'}[t]||t;if(!['zoek','leerpad','fouten','projecten','vooruitgang'].includes(t))t='zoek';CURV=t;
 document.querySelectorAll('#tabs a').forEach(x=>x.classList.toggle('on',x.dataset.t==t));
 MM.hidden=t!='zoek';VW.hidden=t=='zoek';['all','ken','cnt'].forEach(k=>document.getElementById(k).hidden=t!='zoek');
