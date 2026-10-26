@@ -241,7 +241,7 @@ const LS_CODE='pf-code',LS_PGOK='pf-pgok',LS_PGC='sw_pgcode';let CODE=lsg(LS_COD
 const svT={};function svCode(key,id,v,start){clearTimeout(svT[key+id]);svT[key+id]=setTimeout(()=>{const o=lsg(key,{})||{};if(v===start||!v.trim())delete o[id];else o[id]=v;lss(key,Object.keys(o).length?o:null);if(key==LS_CODE)CODE=o},400)}
 const OKB='<span class="okb">✅ Opgelost</span> ';
 /* Leerpad v2 (16 lessen): oude leerpad-vinkjes, bladwijzer en trajectpositie horen bij andere oefeningen */
-if(lsg('pf_lv',1)<2){Object.keys(DONE).forEach(k=>{if(k.startsWith('l|'))delete DONE[k]});lss(LS_DONE,DONE);lss(LS_BM,null);lss('pf_tr',null);lss('pf_lv',2)}if(typeof DONE!='object'||!DONE)DONE={};
+if(lsg('pf_lv',1)<2)lss('pf_lv',2);if(typeof DONE!='object'||!DONE)DONE={};
 function fp(f){const m=MAP.trim();if(!m)return f;const s=m.includes('/')?'/':'\\';return m.replace(/[\\/]+$/,'')+s+f}
 const X={};
 D.forEach(i=>i.x.forEach((x,k)=>{x.id='c|'+i.g+'|'+i.n+'|'+(k+1);X[x.id]=x}));
@@ -362,7 +362,7 @@ document.getElementById('exb').onclick=ev=>cpy(code,ev.target);
 document.getElementById('imb').onclick=()=>{const s=document.getElementById('imc').value.trim(),st=document.getElementById('ims');
 try{if(!s.startsWith('PF1:'))throw 0;const o=JSON.parse(decodeURIComponent(escape(atob(s.slice(4)))));let n=0;(o.d||[]).forEach(k=>{if(X[k]&&!DONE[k]){DONE[k]=1;n++}});lss(LS_DONE,DONE);if(o.b&&!lsg(LS_BM,0))lss(LS_BM,o.b);prog();document.getElementById('ims').textContent=' ✔ '+n+' oefeningen toegevoegd.'}
 catch(_){st.textContent=' 😕 Die code klopt niet. Kopieer ze opnieuw, volledig.'}};
-document.getElementById('rst').onclick=()=>{if(confirm('Ben je zeker? Al je vinkjes en je bladwijzer worden gewist. Dit kan niet ongedaan worden.')){DONE={};lss(LS_DONE,null);lss(LS_BM,null);prog()}}}
+document.getElementById('rst').onclick=()=>{if(confirm('Ben je zeker? Al je vinkjes, je bladwijzer en je plaats in het begeleid traject worden gewist. Je begint opnieuw bij les 1. Dit kan niet ongedaan worden.')){DONE={};lss(LS_DONE,{});lss(LS_BM,null);lss('pf_tr',{l:1,s:0});if(typeof syPush=='function')syPush();prog()}}}
 let CURV='zoek';
 function route(){pnClose();const h=decodeURIComponent(location.hash.slice(1)),[v,a]=h.split('/');if(v=='traject')return trView();trHide();if(v=='pg'||v=='vergrendel'||v.startsWith('ontgrendel='))return pgRoute(v);if(v=='sync')return syView();if(v=='meenemen'||v.startsWith('import='))return meeView(v.startsWith('import=')?h.slice(7):null);let t=v||'zoek';
 t={les:'leerpad',fout:'fouten',project:'projecten'}[t]||t;if(!['zoek','leerpad','fouten','projecten','vooruitgang'].includes(t))t='zoek';CURV=t;
@@ -487,7 +487,7 @@ setTimeout(()=>{const k=document.querySelector('#m .c');if(k){k.scrollIntoView({
 const LS_ONB='pf_onb',LS_TR='pf_tr';
 const trSteps=n=>1+LSN[n-1].x.length;
 const trTot=()=>LSN.reduce((s,L)=>s+1+L.x.length,0);
-function trPos(){const p=lsg(LS_TR,null);return p&&LSN[p.l-1]&&p.s>=0&&p.s<=trSteps(p.l)?p:{l:1,s:0}}
+function trPos(){const p=lsg(LS_TR,null);if(!p||typeof p!='object')return{l:1,s:0};let l=Math.round(+p.l),s=Math.round(+p.s);if(!isFinite(l)||l<1)l=1;if(l>LSN.length){l=LSN.length;s=trSteps(l)}if(!isFinite(s)||s<0)s=0;if(s>trSteps(l))s=0;return{l,s}}
 function trIdx(p){let i=0;for(let k=1;k<p.l;k++)i+=trSteps(k);return i+p.s}
 const TB=document.createElement('div');TB.id='trb';TB.hidden=true;TB.setAttribute('role','navigation');TB.setAttribute('aria-label','Traject');document.body.appendChild(TB);
 function trBar(p){const L=LSN[p.l-1],end=p.s==trSteps(p.l),x=p.s>0&&!end?L.x[p.s-1]:null,ok=x&&DONE[x.id];
@@ -569,9 +569,10 @@ const syGet=k=>{try{return localStorage.getItem(k)||''}catch(_){return ''}},sySe
 const syFlag=k=>k==LS_DONE||k==LS_PGOK;
 function syData(){const o=meeData();delete o.pf_theme;return o}
 function syPj(s){try{const v=JSON.parse(s);return v&&typeof v=='object'&&!Array.isArray(v)?v:null}catch(_){return null}}
+const LS_TR_K='pf_tr';
 function syMerge(L,R,B){const out={};const ks=new Set([...Object.keys(L),...Object.keys(R)].sort());
 ks.forEach(k=>{const l=L[k],r=R[k],b=B[k];if(l==null){out[k]=r;return}if(r==null||l===r){out[k]=l;return}
-const lo=syPj(l),ro=syPj(r);if(lo&&ro){const bo=syPj(b)||{},m={};new Set([...Object.keys(lo),...Object.keys(ro)]).forEach(s=>{const a=lo[s],c=ro[s];
+const lo=syPj(l),ro=syPj(r);if(k==LS_TR_K&&lo&&ro){const bo=syPj(b),eq=(x,y)=>x&&y&&x.l==y.l&&x.s==y.s,far=(x,y)=>(+x.l-+y.l)||(+x.s-+y.s);out[k]=eq(lo,bo)?r:eq(ro,bo)?l:(far(lo,ro)>=0?l:r);return}if(lo&&ro){const bo=syPj(b)||{},m={};new Set([...Object.keys(lo),...Object.keys(ro)]).forEach(s=>{const a=lo[s],c=ro[s];
 if(a===undefined){m[s]=c;return}if(c===undefined||JSON.stringify(a)===JSON.stringify(c)){m[s]=a;return}
 if(syFlag(k)){m[s]=(typeof a=='number'&&typeof c=='number')?Math.max(a,c):(a||c);return}
 if(typeof a=='number'&&typeof c=='number'){m[s]=Math.max(a,c);return}
@@ -593,6 +594,7 @@ const ms=JSON.stringify(M);if(ms!==JSON.stringify(R)){const w=await fetch(SY_API
 sySet(SY_BASE,ms);syLast=JSON.stringify(syData());syStatus('Gesynchroniseerd om '+syHm());
 if(ch){if(!syEditing()){location.reload()}else syStatus('Nieuwe voortgang van je andere toestel is geladen. Herlaad de pagina om ze te zien.')}}
 catch(_){syStatus('Offline: je voortgang wordt later gesynchroniseerd.')}finally{syBusy=false}}
+async function syPush(){if(!syGet(SY_TOK)||!syGet(SY_GID))return;const M=syData();try{const w=await fetch(SY_API+'/'+encodeURIComponent(syGet(SY_GID)),{method:'PATCH',headers:syHdr(),body:JSON.stringify({files:{[SY_FILE]:{content:JSON.stringify({app:'Slangwijs',v:1,t:new Date().toISOString(),d:M})}}})});if(w.ok){sySet(SY_BASE,JSON.stringify(M));syLast=JSON.stringify(M);syStatus('Gesynchroniseerd om '+syHm())}}catch(_){}}
 function syKick(){clearTimeout(syT);syT=setTimeout(()=>syRun(false),3000)}
 setInterval(()=>{if(!syGet(SY_TOK)||!syGet(SY_GID))return;const s=JSON.stringify(syData());if(s!==syLast){syLast=s;syKick()}},4000);
 document.addEventListener('visibilitychange',()=>{if(!syGet(SY_GID))return;if(document.visibilityState=='visible')syRun(false);else{const s=JSON.stringify(syData());if(s!==syLast){clearTimeout(syT);syRun(false)}}});
