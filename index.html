@@ -251,7 +251,7 @@ const cpS=(p,t,cls)=>'<span class="cp'+(cls?' '+cls:'')+'" data-cp="'+ea(p)+'" d
 const nd=p=>Object.keys(DONE).filter(k=>k.startsWith(p)&&X[k]).length;
 function updCounters(){document.querySelectorAll('.cp').forEach(s=>{const d=nd(s.dataset.cp),t=+s.dataset.tot;
 s.textContent=s.classList.contains('full')?d+'/'+t+(d==t&&t?' ✅':''):(d?' · ✔ '+d+'/'+t:'')})}
-function setDone(id,v){if(v)DONE[id]=1;else delete DONE[id];lss(LS_DONE,DONE);
+function setDone(id,v){DONE=Object.assign({},lsg(LS_DONE,{})||{},DONE);if(v)DONE[id]=1;else delete DONE[id];lss(LS_DONE,DONE);
 document.querySelectorAll('.ex').forEach(ex=>{if(ex.dataset.x!==id)return;ex.classList.toggle('done',v);ex.querySelector('.ck').innerHTML=v?OKB:'';ex.querySelector('.dn').checked=v});updCounters()}
 const erows=s=>Math.max(3,String(s).split('\n').length+1);const rows=s=>Math.min(20,Math.max(3,s.split('\n').length+1));
 const HS=x=>x.hs||(x.h?[x.h]:[]);
@@ -362,7 +362,7 @@ document.getElementById('exb').onclick=ev=>cpy(code,ev.target);
 document.getElementById('imb').onclick=()=>{const s=document.getElementById('imc').value.trim(),st=document.getElementById('ims');
 try{if(!s.startsWith('PF1:'))throw 0;const o=JSON.parse(decodeURIComponent(escape(atob(s.slice(4)))));let n=0;(o.d||[]).forEach(k=>{if(X[k]&&!DONE[k]){DONE[k]=1;n++}});lss(LS_DONE,DONE);if(o.b&&!lsg(LS_BM,0))lss(LS_BM,o.b);prog();document.getElementById('ims').textContent=' ✔ '+n+' oefeningen toegevoegd.'}
 catch(_){st.textContent=' 😕 Die code klopt niet. Kopieer ze opnieuw, volledig.'}};
-document.getElementById('rst').onclick=()=>{if(confirm('Ben je zeker? Al je vinkjes, je bladwijzer en je plaats in het begeleid traject worden gewist. Je begint opnieuw bij les 1. Dit kan niet ongedaan worden.')){DONE={};lss(LS_DONE,{});lss(LS_BM,null);lss('pf_tr',{l:1,s:0});if(typeof syPush=='function')syPush();prog()}}}
+document.getElementById('rst').onclick=()=>{if(confirm('Ben je zeker? Al je vinkjes, je bladwijzer en je plaats in het begeleid traject worden gewist. Je begint opnieuw bij les 1. Dit kan niet ongedaan worden.')){DONE={};lss(LS_DONE,{});lss(LS_BM,0);lss('pf_tr',{l:1,s:0});lss('pf_reset',Date.now());if(typeof syPush=='function')syPush();prog()}}}
 let CURV='zoek';
 function route(){pnClose();const h=decodeURIComponent(location.hash.slice(1)),[v,a]=h.split('/');if(v=='traject')return trView();trHide();if(v=='pg'||v=='vergrendel'||v.startsWith('ontgrendel='))return pgRoute(v);if(v=='sync')return syView();if(v=='meenemen'||v.startsWith('import='))return meeView(v.startsWith('import=')?h.slice(7):null);let t=v||'zoek';
 t={les:'leerpad',fout:'fouten',project:'projecten'}[t]||t;if(!['zoek','leerpad','fouten','projecten','vooruitgang'].includes(t))t='zoek';CURV=t;
@@ -570,7 +570,8 @@ const syFlag=k=>k==LS_DONE||k==LS_PGOK;
 function syData(){const o=meeData();delete o.pf_theme;return o}
 function syPj(s){try{const v=JSON.parse(s);return v&&typeof v=='object'&&!Array.isArray(v)?v:null}catch(_){return null}}
 const LS_TR_K='pf_tr';
-function syMerge(L,R,B){const out={};const ks=new Set([...Object.keys(L),...Object.keys(R)].sort());
+const SY_RK=['pf-klaar','pf_tr','pf-bladwijzer'];
+function syMerge(L,R,B){const Lr=+L.pf_reset||0,Rr=+R.pf_reset||0;if(Lr!=Rr){const o=Object.assign({},Lr<Rr?L:R);SY_RK.forEach(k=>delete o[k]);if(Lr<Rr)L=o;else R=o;B={}}const out={};const ks=new Set([...Object.keys(L),...Object.keys(R)].sort());
 ks.forEach(k=>{const l=L[k],r=R[k],b=B[k];if(l==null){out[k]=r;return}if(r==null||l===r){out[k]=l;return}
 const lo=syPj(l),ro=syPj(r);if(k==LS_TR_K&&lo&&ro){const bo=syPj(b),eq=(x,y)=>x&&y&&x.l==y.l&&x.s==y.s,far=(x,y)=>(+x.l-+y.l)||(+x.s-+y.s);out[k]=eq(lo,bo)?r:eq(ro,bo)?l:(far(lo,ro)>=0?l:r);return}if(lo&&ro){const bo=syPj(b)||{},m={};new Set([...Object.keys(lo),...Object.keys(ro)]).forEach(s=>{const a=lo[s],c=ro[s];
 if(a===undefined){m[s]=c;return}if(c===undefined||JSON.stringify(a)===JSON.stringify(c)){m[s]=a;return}
