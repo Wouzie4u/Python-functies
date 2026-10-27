@@ -295,7 +295,7 @@ let h='<div class="lab">Jouw uitvoer:</div><pre>'+(R.o?e(R.o):'<i>(geen uitvoer)
 if(mode=='chk'){if(!R.e&&norm(R.o)==norm(x.o)){h='<div class="ok">🎉 Juist! Goed gedaan, deze is opgelost.</div>'+h;setDone(x.id,true)}
 else if(R.e)h='<div class="bad">🔧 Er loopt nog iets mis. Lees de foutmelding hieronder rustig, je komt er wel!</div>'+h;
 else h=(bijna(R.o,x.o)||'')+'<div class="bad">🤔 Bijna! '+diff(R.o,x.o)+'</div>'+h}
-else if(mode=='run'&&!x.i&&code!==x.k&&!R.e&&norm(R.o)&&norm(R.o)==norm(x.o)){h='<div class="ok">✅ Juist! Opgelost</div>'+h;setDone(x.id,true)}
+else if(mode=='run'&&!x.i&&code!==x.k&&!String(x.id).startsWith('o|')&&!R.e&&norm(R.o)&&norm(R.o)==norm(x.o)){h='<div class="ok">✅ Juist! Opgelost</div>'+h;setDone(x.id,true)}
 else if(mode=='run'&&!x.i&&x.v&&!R.e&&norm(R.o)!=norm(x.o)){h=bijna(R.o,x.o)+'<div class="bad">❌ Nog niet juist. Vergelijk jouw uitvoer met de verwachte uitvoer.</div><div class="cmp"><div><div class="lab">Jouw uitvoer:</div><pre>'+(R.o?e(R.o):'<i>(geen uitvoer)</i>')+'</pre></div><div><div class="lab">🎯 Verwachte uitvoer:</div><pre>'+e(x.o)+'</pre></div></div>'}
 out.innerHTML=h;window.__last=R;if(document.body.classList.contains('trm'))try{out.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(_){}}
 document.addEventListener('keydown',ev=>{const t=ev.target;if(!t.classList||!t.classList.contains('ed'))return;
