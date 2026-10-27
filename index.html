@@ -356,7 +356,7 @@ h+='<h3>Projecten</h3>'+row('Projecten','p|',PR.length,'projecten');
 h+='<h3>Opzoeken</h3>'+Object.keys(T).map(g=>row(e(T[g]),'c|'+g+'|',D.filter(i=>i.g==g).reduce((s,i)=>s+i.x.length,0))).join('');
 h+='<h3>Overzetten naar een ander toestel</h3><p class="pt">Je vooruitgang wordt alleen op dit toestel bewaard. Kopieer de code hieronder en plak ze op je andere toestel (gsm of laptop) in het vak "Code plakken".</p><textarea id="exc" class="ed" rows="3" readonly></textarea><button class="xb" id="exb">📋 Kopieer mijn code</button>'+
 '<textarea id="imc" class="ed" rows="3" placeholder="Code plakken"></textarea><button class="xb" id="imb">📥 Code inlezen</button><span id="ims" class="pt"></span>'+
-'<h3>🎲 Herhalen</h3><a class="lk big" href="#willekeurig">🎲 Willekeurige oefening (uit lessen die je al zag) →</a><h3>Opnieuw beginnen</h3><button class="xb" id="rst">🗑️ Vooruitgang wissen</button>';VW.innerHTML=h;
+'<h3>🔄 Synchroniseren</h3>'+syBox()+'<h3>🎲 Herhalen</h3><a class="lk big" href="#willekeurig">🎲 Willekeurige oefening (uit lessen die je al zag) →</a><h3>Opnieuw beginnen</h3><button class="xb" id="rst">🗑️ Vooruitgang wissen</button>';VW.innerHTML=h;
 const code='PF1:'+btoa(unescape(encodeURIComponent(JSON.stringify({d:Object.keys(DONE),b:lsg(LS_BM,0)}))));document.getElementById('exc').value=code;
 document.getElementById('exb').onclick=ev=>cpy(code,ev.target);
 document.getElementById('imb').onclick=()=>{const s=document.getElementById('imc').value.trim(),st=document.getElementById('ims');
@@ -402,7 +402,7 @@ const n=(()=>{try{const d=JSON.parse(o['pf-klaar']||'{}');return Object.keys(d).
 if(meeHave()&&!confirm('Je huidige voortgang op dit toestel wordt vervangen door de meegenomen voortgang. Doorgaan?')){out.innerHTML='<div class="pt">Niets veranderd. Je voortgang op dit toestel blijft zoals hij was.</div>';return}
 meeLoad(o);out.innerHTML='<div class="ok">🎉 Gelukt! De voortgang is geladen ('+n+' oefeningen klaar). De app start opnieuw...</div>';setTimeout(()=>{location.replace(location.pathname+'#vooruitgang');location.reload()},1200)}
 function meeView(imp){document.querySelectorAll('#tabs a').forEach(x=>x.classList.remove('on'));MM.hidden=true;VW.hidden=false;['all','ken','cnt'].forEach(k=>document.getElementById(k).hidden=true);CURV='meenemen';
-VW.innerHTML='<h2>📲 Voortgang meenemen</h2><p>Wil je verder oefenen op een ander toestel, bv. een tablet? Neem je voortgang mee. Er is geen account nodig en er gaat niets naar het internet: alles zit in de code zelf.</p>'+
+VW.innerHTML='<h2>📲 Voortgang meenemen</h2>'+syBox()+'<p><b>Of handmatig met een code/QR:</b> Wil je verder oefenen op een ander toestel, bv. een tablet? Neem je voortgang mee. Er is geen account nodig en er gaat niets naar het internet: alles zit in de code zelf.</p>'+
 (imp?'<div class="wu" id="meeimp"><b>📥 Er is voortgang meegestuurd.</b><p>Wil je die op dit toestel laden?</p><button type="button" class="xb pri" id="meeyes">Laad voortgang</button> <a href="#vooruitgang">Nee, niet laden</a><div id="meeio"></div></div>':'')+
 '<h3>📤 Exporteren (op het oude toestel)</h3><ol><li>Tik op <b>Toon QR-code</b>.</li><li>Open op het nieuwe toestel de <b>camera</b> en richt die op de QR-code. Tik op de link die verschijnt.</li><li>Kies daar <b>Laad voortgang</b>.</li></ol><p>Lukt scannen niet? Tik dan op <b>Kopieer</b> en stuur de code naar jezelf (bv. via mail of WhatsApp). Plak hem op het nieuwe toestel hieronder bij Importeren.</p>'+
 '<button type="button" class="xb pri" id="meeqr">Toon QR-code</button><div id="meeqrbox"></div><label class="lab" for="meecode">Jouw code:</label><textarea id="meecode" class="ed" rows="3" readonly spellcheck="false"></textarea><button type="button" class="xb" id="meecp">📋 Kopieer</button>'+
@@ -589,7 +589,9 @@ m[s]=JSON.stringify(a)===JSON.stringify(bo[s])?c:a});const so={};Object.keys(m).
 const ln=+l,rn=+r;if(l.trim()!==''&&r.trim()!==''&&!isNaN(ln)&&!isNaN(rn)){out[k]=String(Math.max(ln,rn));return}
 out[k]=l===b?r:l});return out}
 let syMsg='',syBusy=false,syLast='',syT=0;
-function syStatus(m){syMsg=m;document.querySelectorAll('.synst').forEach(e=>e.textContent=m)}
+function syLine(){if(!syGet(SY_TOK)||!syGet(SY_GID))return '🔄 Synchronisatie: uit (je voortgang staat alleen op dit toestel)';const t=+syGet('sws_last')||0;if(!t)return '🔄 Synchronisatie: aan, nog niet gelukt';const d=new Date(t);return '🔄 Synchronisatie: aan, laatst '+d.toLocaleDateString('nl-BE')+' om '+d.toLocaleTimeString('nl-BE',{hour:'2-digit',minute:'2-digit'})}
+function syBox(){return '<div class="opd" style="margin:12px 0"><b class="synline">'+e(syLine())+'</b><div class="pt synst">'+e(syMsg||'')+'</div><a class="xb pri" href="#sync" style="display:inline-block;margin-top:8px">🔄 Automatisch synchroniseren instellen (gsm en laptop)</a></div>'}
+function syStatus(m){syMsg=m;document.querySelectorAll('.synst').forEach(e=>e.textContent=m);document.querySelectorAll('.synline').forEach(x=>x.textContent=syLine())}
 const syHm=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
 function syHdr(){return{'Authorization':'Bearer '+syGet(SY_TOK),'Accept':'application/vnd.github+json','Content-Type':'application/json'}}
 function syErr(st){return st==401?'Synchroniseren lukt niet: de token klopt niet of is verlopen.':st==403?'Synchroniseren lukt niet: de token heeft geen Gist-toestemming.':st==404?'Synchroniseren lukt niet: de gist is niet gevonden. Kijk het gist-id na.':'Synchroniseren lukt nu niet. Ik probeer het later opnieuw.'}
@@ -600,7 +602,7 @@ const g=await r.json(),f=g.files&&g.files[SY_FILE];let R={};if(f){let c=f.conten
 const L=syData(),B=syPj(syGet(SY_BASE))||{},M=syMerge(L,R,B);let ch=false;
 for(const k in M){if(typeof M[k]=='string'&&/^pf[-_]/.test(k)&&L[k]!==M[k]){try{localStorage.setItem(k,M[k]);ch=true}catch(_){}}}
 const ms=JSON.stringify(M);if(ms!==JSON.stringify(R)){const w=await fetch(SY_API+'/'+encodeURIComponent(syGet(SY_GID)),{method:'PATCH',headers:syHdr(),body:JSON.stringify({files:{[SY_FILE]:{content:JSON.stringify({app:'Slangwijs',v:1,t:new Date().toISOString(),d:M})}}})});if(!w.ok){syStatus(syErr(w.status));return}}
-sySet(SY_BASE,ms);syLast=JSON.stringify(syData());syStatus('Gesynchroniseerd om '+syHm());
+sySet(SY_BASE,ms);sySet('sws_last',String(Date.now()));syLast=JSON.stringify(syData());syStatus('Gesynchroniseerd om '+syHm());
 if(ch){if(!syEditing()){location.reload()}else syStatus('Nieuwe voortgang van je andere toestel is geladen. Herlaad de pagina om ze te zien.')}}
 catch(_){syStatus('Offline: je voortgang wordt later gesynchroniseerd.')}finally{syBusy=false}}
 async function syPush(){if(!syGet(SY_TOK)||!syGet(SY_GID))return;const M=syData();try{const w=await fetch(SY_API+'/'+encodeURIComponent(syGet(SY_GID)),{method:'PATCH',headers:syHdr(),body:JSON.stringify({files:{[SY_FILE]:{content:JSON.stringify({app:'Slangwijs',v:1,t:new Date().toISOString(),d:M})}}})});if(w.ok){sySet(SY_BASE,JSON.stringify(M));syLast=JSON.stringify(M);syStatus('Gesynchroniseerd om '+syHm())}}catch(_){}}
@@ -617,7 +619,7 @@ document.getElementById('sygid').value=g.id;document.getElementById('sycpid').on
 function syView(){document.querySelectorAll('#tabs a').forEach(x=>x.classList.remove('on'));MM.hidden=true;VW.hidden=false;['all','ken','cnt'].forEach(k=>document.getElementById(k).hidden=true);CURV='sync';
 const has=!!syGet(SY_TOK);
 VW.innerHTML='<h2>🔄 Synchroniseren</h2><p>Hou je voortgang automatisch gelijk op je gsm en je laptop. Je voortgang wordt bewaard in een <b>geheime gist</b> op je eigen GitHub-account. Dit is niet verplicht: zonder token blijft alles gewoon op dit toestel.</p>'+
-'<p class="synst pt">'+e(syMsg||(syGet(SY_GID)&&has?'Nog niet gesynchroniseerd.':'Synchroniseren staat uit.'))+'</p>'+
+'<p><b class="synline">'+e(syLine())+'</b></p><p class="synst pt">'+e(syMsg||(syGet(SY_GID)&&has?'Nog niet gesynchroniseerd.':'Synchroniseren staat uit.'))+'</p>'+
 '<label class="lab" for="sytok"><b>Token</b> (fine-grained, alleen Gists)</label><input id="sytok" type="password" autocomplete="off" spellcheck="false" placeholder="'+(has?'Token is bewaard (plak een nieuwe om te vervangen)':'Plak hier je token')+'">'+
 '<label class="lab" for="sygid"><b>Gist-id</b></label><input id="sygid" type="text" autocomplete="off" spellcheck="false" placeholder="Leeg laten op je eerste toestel" value="'+ea(syGet(SY_GID))+'">'+
 '<p><button type="button" class="xb pri" id="sysave">Bewaar en synchroniseer</button> <button type="button" class="xb" id="synew">Maak een nieuwe geheime gist</button> <button type="button" class="xb" id="syoff">Zet synchroniseren uit</button></p><div id="syout"></div>'+
